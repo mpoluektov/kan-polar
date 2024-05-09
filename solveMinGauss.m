@@ -16,12 +16,15 @@ t_max_all = zeros(Nrun,p);
 
 for jj=1:Nrun
     
-    [ yhat_all, dum2, dum3, dum4, dum5, dum6, LgradB_all, LgradT_all ] = buildKA_basisC( x, y, lab, 0, identID, 0, 1, xmin, xmax, ymin, ymax, fnB, fnT );
-    L_all = yhat_all - y;
+    indI = ( lab == identID );
+    indV = ( lab == verifID );
+
+    %. training
+    [ yhat_all, LgradB_all, LgradT_all ] = modelKA_basisC( x(indI,:), xmin, xmax, ymin, ymax, fnB, fnT );
+    L_all = yhat_all - y(indI,:);
     
-    ind = (lab == identID);
-    F = L_all(ind,:);
-    J = [ LgradB_all(ind,:) LgradT_all(ind,:) ];
+    F = L_all;
+    J = [ LgradB_all LgradT_all ];
     A = J.' * J;
     b = J.' * F;
     Ar = A + lam*eye(n*p*m+q*p);
@@ -33,7 +36,12 @@ for jj=1:Nrun
     fnB = fnB + alp*dltB;
     fnT = fnT + alp*dltT;
 
-    [ yhat_all, dum2, dum3, RMSE(jj), t_min_all(jj,:), t_max_all(jj,:) ] = buildKA_basisC( x, y, lab, 0, verifID, 0, 1, xmin, xmax, ymin, ymax, fnB, fnT );
+    %. validation
+    [ yhat_all, dum1, dum2, t_min, t_max ] = modelKA_basisC( x(indV,:), xmin, xmax, ymin, ymax, fnB, fnT );
+    err_all = abs( yhat_all - y(indV,:) );
+    RMSE(jj) = sqrt( mean( err_all.^2 ) )/(ymax-ymin);
+    t_min_all(jj,:) = t_min;
+    t_max_all(jj,:) = t_max;
     
     printProgr = 1;
     if ( printProgr == 1 )
