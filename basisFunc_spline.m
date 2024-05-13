@@ -9,11 +9,14 @@ ind = floor(tt)+1;
 ind(ind<=0) = 1;
 ind(ind>=n) = n-1;
 
-QL = (ind == (1:n).');
-QR = (ind == (0:(n-1)).');
+I = eye(n);
+QL = I(:,ind);
+QR = I(:,ind+1);
+MQL = M(:,ind);
+MQR = M(:,ind+1);
 T = repmat( tt-ind+1, n, 1 );
-ZL = M*QL - QR + QL;
-ZR = -M*QR + QR - QL;
+ZL = MQL - QR + QL;
+ZR = -MQR + QR - QL;
 ZI = (1-T).*ZL + T.*ZR;
 V = (1-T).*QL + T.*QR + T.*(1-T).*ZI;
 dV = (1-2*T).*ZI + T.*(1-T).*(ZR-ZL) + QR - QL;
