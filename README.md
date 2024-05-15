@@ -20,15 +20,15 @@ The main highlights of the code are:
 
 The user can run the code by executing the main file: `mainTriang;`
 
-In the main function, flag `modelMethod` selects the model type (splines or piecewise-linear) and the identification method (GN or NK). In the identification methods' functions, flag `printProgr` switches the printout of the progress in the Command Window.
+In the main script, flag `modelMethod` selects the model type (splines or piecewise-linear) and the identification method (GN or NK). In the identification functions, flag `printProgr` switches the printout of the progress in the Command Window.
 
 The code builds the model and plots `log(RMSE)` as a function of the number of passes through the data. The model constitutes two matrices with the parameters: `fnB` and `fnT`. 
 
-The obtained model can be used to make a prediction on a new dataset. For the spline version of the model,
-`y = modelKA_basisC( x, xmin, xmax, ymin, ymax, fnB, fnT );`
-should be executed, where `x` is the input data in the same format as in script `mainTriang`, and `y` will be the predicted output data. For the piecewise-linear version of the model, the function that makes the prediction is `modelKA_linear`; it has the same format as above.
+The obtained model can be used to make a prediction on a new dataset. For the spline version of the model,\
+`y = modelKA_basisC( x, xmin, xmax, ymin, ymax, fnB, fnT );`\
+should be executed, where `x` is the input data in the same format as in script `mainTriang` and `y` will be the predicted output data. For the piecewise-linear version of the model, the function that makes the prediction is `modelKA_linear` (it has the same format as above).
 
-The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D and the output is the area of the triangle that is formed by the points. The points belong to the unit square.
+The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D and the output is the area of the triangle that is formed by the points. The points belong to the unit square. The default example takes approximately 14 seconds on a laptop with 11th Gen Intel Core i5.
 
 ## Developer and acknowledgements
 
