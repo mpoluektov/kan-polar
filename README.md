@@ -8,17 +8,27 @@ The code represents the implementation of the Kolmogorov-Arnold regression model
 
 The code is written in MATLAB.
 
-The code is a result of the collaborative project between myself and Andrew Polar conducted in 2019-2023. The basic concept of this approach has been published in Ref.[^1] in 2021. Our latest paper, Ref.[^2] published as a preprint in May 2023, has the most general formulation of the approach. The main highlights of the code are:
-- the underlying functions of the representation can be either cubic splines or piecewise-linear, depending on the desired accuracy and the desired training time;
-- two identification methods are implemented - the Gauss-Newton and the Newton-Kaczmarz methods;
-- the code has minimalist design, it uses only built-in MATLAB functions;
-- the core part of the code is less than 100 lines.
+The code is a result of the collaborative project between myself and Andrew Polar conducted in 2019-2023. The basic concept of this approach has been published in Ref.[^1] in 2021. Our latest paper, Ref.[^2] published as a preprint in May 2023, has the most general formulation of the approach. 
+
+The main highlights of the code are:
+- the underlying functions of the representation can be either cubic splines or piecewise-linear functions;
+- the Gauss-Newton (GN) and the Newton-Kaczmarz (NK) identification methods are implemented;
+- the code has minimalist design - it uses only built-in MATLAB functions;
+- the core part of the code constitutes fewer than 100 lines.
 
 ## Getting started
 
 The user can run the code by executing the main file: `mainTriang;`
 
-The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D and the output is the area of the triangle that is formed by the points. The points belong to unit square. The model is built and the RMSE as a function of the iteration number is plotted.
+In the main function, flag `modelMethod` selects the model type (splines or piecewise-linear) and the identification method (GN or NK). In the identification methods' functions, flag `printProgr` switches the printout of the progress in the Command Window.
+
+The code builds the model and plots `log(RMSE)` as a function of the number of passes through the data. The model constitutes two matrices with the parameters: `fnB` and `fnT`. 
+
+The obtained model can be used to make a prediction on a new dataset. For the spline version of the model,
+`y = modelKA_basisC( x, xmin, xmax, ymin, ymax, fnB, fnT );`
+should be executed, where `x` is the input data in the same format as in script `mainTriang`, and `y` will be the predicted output data. For the piecewise-linear version of the model, the function that makes the prediction is `modelKA_linear`; it has the same format as above.
+
+The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D and the output is the area of the triangle that is formed by the points. The points belong to the unit square.
 
 ## Developer and acknowledgements
 
