@@ -81,7 +81,7 @@ for jj=1:Nrun
     t_min_all(jj,:) = min(t_all(inds,:));
     t_max_all(jj,:) = max(t_all(inds,:));
 
-    printProgr = 0;
+    printProgr = 1;
     if ( printProgr == 1 )
         if ( jj > 1 )
             fprintf( repmat( '\b', 1, 34 ) );

@@ -139,7 +139,7 @@ for jj=1:Nrun
     end
 
     inds = ( lab == verifID );
-    RMSE(jj) = sqrt( sum( err_all(inds).^2 )/sum(inds) )/(ymax-ymin);
+    RMSE(jj) = sqrt( sum( err_all(inds).^2 )/sum(inds) );
     t_min_all(jj,:) = min(t_all(inds,:));
     t_max_all(jj,:) = max(t_all(inds,:));
 

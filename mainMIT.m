@@ -3,32 +3,20 @@
 %.   See (Poluektov and Polar, arXiv:2305.08194, May 2023)
 %.   Code has been written by Michael Poluektov (University of Dundee, Department of Mathematical Sciences and Computational Physics)
 
-%.   The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D
-%.   and the output is the area of the triangle that is formed by the points. The points belong to unit square.
-%.   K.-A. regression model is built and the RMSE as a function of the iteration number is plotted.
-%.   There are three possible combinations of the model variant and the identification method. 
+%.   The computational example is a synthetic dataset - function fitting to compare execution time with (Z. Liu et al., arXiv:2404.19756, 2024)
 
 clear variables;
 close all;
 
 %% generate data
 
-%. total number of input-output records - training and validation
-N = 1.2e4;
+N = 2e3;
+Nid = 1e3 + 1;
 
-%. number of records to be used for training
-Nid = 1e4 + 1;
+m = 2;
+x = 2*rand(N,m)-1;
 
-%. number of inputs
-m = 6;
-
-%. inputs
-x = rand(N,m);
-
-%. outputs
-sides = [ sqrt( (x(:,3)-x(:,1)).^2 + (x(:,4)-x(:,2)).^2 )  sqrt( (x(:,5)-x(:,3)).^2 + (x(:,6)-x(:,4)).^2 )  sqrt( (x(:,1)-x(:,5)).^2 + (x(:,2)-x(:,6)).^2 ) ];
-hper = ( sides(:,1) + sides(:,2) + sides(:,3) )/2;
-y = sqrt( hper .* ( hper - sides(:,1) ) .* ( hper - sides(:,2) ) .* ( hper - sides(:,3) ) );
+y = exp( sin(pi*x(:,1)) + x(:,2).^2 );
 
 %. label records to be used for training and validation
 lab = ones(N,1);
@@ -39,28 +27,28 @@ verifID = 2;
 %% numerical param.
 
 %. damping factor for iterative parameter update (also called learning rate)
-alp = 0.5;
+alp = 1;
 
 %. Tikhonov regularisation parameter for Gauss-Newton method 
-lam = 1;
+lam = 0.01;
 
 %. num. of runs through data
-Nrun = 100;
+Nrun = 50;
 
 %. limits
-xmin = 0;
+xmin = -1;
 xmax = 1;
-ymin = 0;
-ymax = 0.5;
+ymin = exp(-1);
+ymax = exp(2);
 
 %. num. of nodes bottom
-n = 7;
+n = 6;
 
 %. num. of nodes top
-q = 7;
+q = 6;
 
 %. num. of bottom operators, 2*m+1 for classical K.-A.
-p = 13;
+p = 5;
 
 %% build K.-A.
 
