@@ -34,7 +34,7 @@ There are three scripts with the units tests: `testBasis` for verifying the deri
 
 Data-driven solution of partial differential equations is implemented separately in script `solvePDE_NK`. The computational example is a second-order PDE; the details are given in Ref.[^2], the updated version from June 2024. The default example takes approximately 15 seconds on a laptop with 11th Gen Intel Core i5.
 
-Script `mainMIT' runs the same example as in a recent Python implementation by other researchers (link in the file). It is added only for reproducing the latest benchmark results reported in Ref.[^2].
+Script `mainMIT` runs the same example as in a recent Python implementation by other researchers (link in the file). It is added only for reproducing the latest benchmark results reported in Ref.[^2].
 
 ## Developer and acknowledgements
 
