@@ -42,7 +42,7 @@ Script `mainMIT` runs the same example as in a recent Python implementation by o
 
 The code has been developed by Dr Michael Poluektov (University of Dundee, Department of Mathematical Sciences and Computational Physics).
 
-The author would like to acknowledge the great help of Dr Andrew Polar, who contributed equally to the research project and maintains separate implementations of the approach in C# and C++ on his GitHub page.
+The author would like to acknowledge the great help of Dr Andrew Polar, who contributed equally to the research project and maintains separate implementations of the approach in C# and C++ on his GitHub page[^3].
 
 [^1]: A. Polar and M. Poluektov, _Eng. Appl. Artif. Intell._, 99:104137, 2021, [link](https://www.sciencedirect.com/science/article/abs/pii/S0952197620303742).
 [^2]: M. Poluektov and A. Polar, arXiv:2305.08194, 2023, [link](https://arxiv.org/abs/2305.08194).
