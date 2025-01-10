@@ -4,7 +4,7 @@ _Accurate and fast regression model based on solid mathematical foundation._
 
 ## Summary
 
-The code represents the implementation of the Kolmogorov-Arnold regression model and two methods of the model identification. This approach has recently gained popularity under name "KAN: Kolmogorov-Arnold Networks".
+The code represents the implementation of the Kolmogorov-Arnold regression model and two model training algorithms. This approach has recently gained popularity under name "KAN: Kolmogorov-Arnold Networks".
 
 The code is written in MATLAB.
 
@@ -30,6 +30,8 @@ should be executed, where `x` is the input data in the same format as in script 
 
 The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D and the output is the area of the triangle that is formed by the points. The points belong to the unit square. The default example takes approximately 14 seconds on a laptop with 11th Gen Intel Core i5.
 
+The example above demonstrates the classical Kolmogorov-Arnold architecture of two layers (corresponding to the inner and the outer functions). In some cases, a multi-layered version gives higher accuracy for the comparable number of parameters. Therefore, training of a three-layered version of the model is demonstrated in script `mainTriangDeep`. Both cubic-spline and piecewise-linear versions are implemented. The three-layered model constitutes three matrices with the parameters: `fnB`, `fnM`, and `fnT`. Having trained the model, a prediction on a new dataset can be obtained using functions `modelKAdeep_basisC` and `modelKAdeep_linear` for cubic-spline and piecewise-linear versions, respectively.
+
 There are three scripts with the units tests: `testBasis` for verifying the derivatives of the basis functions, `testDeriv` for verifying the derivatives of the model output by the inputs and by the parameters, and `testSpline` for comparing the implemented splines with the built-in MATLAB splines.
 
 Data-driven solution of partial differential equations is implemented separately in script `solvePDE_NK`. The computational example is a second-order PDE; the details are given in Ref.[^2], the updated version from June 2024. The default example takes approximately 15 seconds on a laptop with 11th Gen Intel Core i5.
@@ -44,3 +46,4 @@ The author would like to acknowledge the great help of Dr Andrew Polar, who cont
 
 [^1]: A. Polar and M. Poluektov, _Eng. Appl. Artif. Intell._, 99:104137, 2021, [link](https://www.sciencedirect.com/science/article/abs/pii/S0952197620303742).
 [^2]: M. Poluektov and A. Polar, arXiv:2305.08194, 2023, [link](https://arxiv.org/abs/2305.08194).
+[^3]: A. Polar, [link](https://github.com/andrewpolar).
