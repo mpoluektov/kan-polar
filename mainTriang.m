@@ -6,7 +6,7 @@
 %.   The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D
 %.   and the output is the area of the triangle that is formed by the points. The points belong to unit square.
 %.   K.-A. regression model is built and the RMSE as a function of the iteration number is plotted.
-%.   There are three possible combinations of the model variant and the identification method. 
+%.   There are four possible combinations of the model variant and the identification method. 
 
 clear variables;
 close all;

@@ -4,8 +4,8 @@
 %.   See (Poluektov and Polar, arXiv:2305.08194, May 2023)
 %.   Code has been written by Michael Poluektov (University of Dundee, Department of Mathematical Sciences and Computational Physics)
 
-%.   The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D
-%.   and the output is the area of the triangle that is formed by the points. The points belong to unit square.
+%.   The computational example is a synthetic dataset - for each record, the inputs are the components 
+%.   of a 4x4 matrix and the output is the determinant of the matrix.
 %.   K.-A. regression model is built and the RMSE as a function of the iteration number is plotted.
 %.   There are three possible combinations of the model variant and the identification method. 
 
@@ -15,21 +15,24 @@ close all;
 %% generate data
 
 %. total number of input-output records - training and validation
-N = 1.2e4;
+N = 1.2e5;
 
 %. number of records to be used for training
-Nid = 1e4 + 1;
+Nid = 1e5 + 1;
 
-%. number of inputs
-m = 6;
+%. dimensionality
+dim = 4;
 
 %. inputs
+m = dim^2;
 x = rand(N,m);
 
 %. outputs
-sides = [ sqrt( (x(:,3)-x(:,1)).^2 + (x(:,4)-x(:,2)).^2 )  sqrt( (x(:,5)-x(:,3)).^2 + (x(:,6)-x(:,4)).^2 )  sqrt( (x(:,1)-x(:,5)).^2 + (x(:,2)-x(:,6)).^2 ) ];
-hper = ( sides(:,1) + sides(:,2) + sides(:,3) )/2;
-y = sqrt( hper .* ( hper - sides(:,1) ) .* ( hper - sides(:,2) ) .* ( hper - sides(:,3) ) );
+y = zeros(N,1);
+for ii=1:N
+    xx = reshape(x(ii,:).',dim,dim);
+    y(ii) = det(xx);
+end
 
 %. label records to be used for training and validation
 lab = ones(N,1);
@@ -46,28 +49,28 @@ alp = 0.5;
 lam = 1;
 
 %. num. of runs through data
-Nrun = 100;
+Nrun = 50;
 
 %. limits
 xmin = 0;
 xmax = 1;
-ymin = 0;
-ymax = 0.5;
+ymin = min(y);
+ymax = max(y);
 
 %. num. of nodes bottom
-n = 7;
+n = 4;
 
 %. num. of nodes middle
-h = 7;
+h = 4;
 
 %. num. of nodes top
-q = 7;
+q = 4;
 
 %. num. of bottom operators
-p = 8;
+p = 20;
 
 %. num. of middle operators
-r = 8;
+r = 2;
 
 %% build K.-A.
 

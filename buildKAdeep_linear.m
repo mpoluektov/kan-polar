@@ -29,6 +29,7 @@ t_all = zeros(N,p);
 s_all = zeros(N,r);
 yhat_all = zeros(N,1);
 RMSE = zeros(Nrun,1);
+PC = zeros(Nrun,1);
 t_min_all = zeros(Nrun,p);
 t_max_all = zeros(Nrun,p);
 s_min_all = zeros(Nrun,r);
@@ -158,12 +159,12 @@ for jj=1:Nrun
     s_min_all(jj,:) = min(s_all(inds,:));
     s_max_all(jj,:) = max(s_all(inds,:));
 
+    PCt = corrcoef( y(inds), yhat_all(inds) );
+    PC(jj) = PCt(1,2);
+
     printProgr = 1;
     if ( printProgr == 1 )
-        if ( jj > 1 )
-            fprintf( repmat( '\b', 1, 34 ) );
-        end
-        fprintf( '  pass %04.0f out of %04.0f completed\n', jj, Nrun );
+        fprintf( '  pass %04.0f out of %04.0f completed, RMSE=%.4f, Pearson=%.4f\n', jj, Nrun, RMSE(jj), PC(jj) );
     end
 end
 

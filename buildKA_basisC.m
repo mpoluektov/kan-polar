@@ -1,4 +1,4 @@
-function [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all, LgradB_all, LgradT_all ] = buildKA_basisC( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 )
+function [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all, t_all ] = buildKA_basisC( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -23,6 +23,7 @@ err_all = zeros(N,1);
 t_all = zeros(N,p);
 yhat_all = zeros(N,1);
 RMSE = zeros(Nrun,1);
+PC = zeros(Nrun,1);
 t_min_all = zeros(Nrun,p);
 t_max_all = zeros(Nrun,p);
 LgradB_all = zeros(N,n*p*m);
@@ -81,12 +82,12 @@ for jj=1:Nrun
     t_min_all(jj,:) = min(t_all(inds,:));
     t_max_all(jj,:) = max(t_all(inds,:));
 
+    PCt = corrcoef( y(inds), yhat_all(inds) );
+    PC(jj) = PCt(1,2);
+
     printProgr = 1;
     if ( printProgr == 1 )
-        if ( jj > 1 )
-            fprintf( repmat( '\b', 1, 34 ) );
-        end
-        fprintf( '  pass %04.0f out of %04.0f completed\n', jj, Nrun );
+        fprintf( '  pass %04.0f out of %04.0f completed, RMSE=%.4f, Pearson=%.4f\n', jj, Nrun, RMSE(jj), PC(jj) );
     end
 end
 

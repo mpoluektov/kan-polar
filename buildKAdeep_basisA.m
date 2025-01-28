@@ -1,4 +1,4 @@
-function [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all, LgradB_all, LgradM_all, LgradT_all ] = buildKAdeep_basisA( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 )
+function [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_basisA( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -26,6 +26,7 @@ r = size(fnM,2)/p;
 
 err_all = zeros(N,1);
 RMSE = zeros(Nrun,1);
+PC = zeros(Nrun,1);
 t_min_all = zeros(Nrun,p);
 t_max_all = zeros(Nrun,p);
 s_min_all = zeros(Nrun,r);
@@ -124,12 +125,12 @@ for jj=1:Nrun
     s_min_all(jj,:) = min(s_all(inds,:));
     s_max_all(jj,:) = max(s_all(inds,:));
 
+    PCt = corrcoef( y(inds), yhat_all(inds) );
+    PC(jj) = PCt(1,2);
+
     printProgr = 1;
     if ( printProgr == 1 )
-        if ( jj > 1 )
-            fprintf( repmat( '\b', 1, 34 ) );
-        end
-        fprintf( '  pass %04.0f out of %04.0f completed\n', jj, Nrun );
+        fprintf( '  pass %04.0f out of %04.0f completed, RMSE=%.4f, Pearson=%.4f\n', jj, Nrun, RMSE(jj), PC(jj) );
     end
 end
 
