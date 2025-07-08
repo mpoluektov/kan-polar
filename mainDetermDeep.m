@@ -45,11 +45,17 @@ verifID = 2;
 %. damping factor for iterative parameter update (also called learning rate)
 alp = 0.5;
 
+%. damping factor for pre-training
+alppre = 0.2;
+
 %. Tikhonov regularisation parameter for Gauss-Newton method 
 lam = 1;
 
-%. num. of runs through data
-Nrun = 50;
+%. num. of runs through data for main training
+Nrun = 30;
+
+%. num. of runs through data for pre-training
+Npre = 8;
 
 %. limits
 xmin = 0;
@@ -61,26 +67,52 @@ ymax = max(y);
 n = 4;
 
 %. num. of nodes middle
-h = 4;
+h = 7;
 
 %. num. of nodes top
-q = 4;
+q = 10;
 
 %. num. of bottom operators
-p = 20;
+p = 16;
 
 %. num. of middle operators
-r = 2;
+r = 8;
 
 %% build K.-A.
 
 tic;
 
-%. initialise
-[ fnB0, fnM0, fnT0 ] = buildKAdeep_init( m, n, h, q, p, r, ymin, ymax );
+%. initialise and/or pre-train
+modelPre = 2;
+if (modelPre == 0)
+
+    %. initialise randomly
+    [ fnB0, fnM0, fnT0 ] = buildKAdeep_init( m, n, h, q, p, r, ymin, ymax );
+
+elseif (modelPre == 1)
+
+    %. initialise pre-training
+    [ fnB0_pre1, fnT0_pre1 ] = buildKA_init( m, n, h, p, ymin, ymax );
+    [ fnB0_pre2, fnT0_pre2 ] = buildKA_init( p, h, q, r, ymin, ymax );
+
+    %. pre-training for three-layer model, basis functions - cubic splines, identification method - Newton-Kaczmarz, standard
+    [ yhat_all_pre1, fnB0, fnTdum, RMSE_pre1, t_min_all_pre1, t_max_all_pre1, t_all_pre1 ] = buildKA_basisC( x, y, lab, identID, verifID, alppre, Npre, xmin, xmax, ymin, ymax, fnB0_pre1, fnT0_pre1 );
+    [ yhat_all_pre2, fnM0, fnT0, RMSE_pre2, t_min_all_pre2, t_max_all_pre2, t_all_pre2 ] = buildKA_basisC( t_all_pre1, y, lab, identID, verifID, alppre, Npre, ymin, ymax, ymin, ymax, fnB0_pre2, fnT0_pre2 );
+    
+elseif (modelPre == 2)
+
+    %. initialise pre-training
+    [ fnB0_pre1, fnT0_pre1 ] = buildKA_init( m, n, h, p, ymin, ymax );
+    [ fnB0_pre2, fnT0_pre2 ] = buildKA_init( p, h, q, r, ymin, ymax );
+
+    %. pre-training for three-layer model, basis functions - piecewise-linear, identification method - Newton-Kaczmarz, standard
+    [ yhat_all_pre1, fnB0, fnTdum, RMSE_pre1, t_min_all_pre1, t_max_all_pre1, t_all_pre1 ] = buildKA_linear( x, y, lab, identID, verifID, alppre, Npre, xmin, xmax, ymin, ymax, fnB0_pre1, fnT0_pre1 );
+    [ yhat_all_pre2, fnM0, fnT0, RMSE_pre2, t_min_all_pre2, t_max_all_pre2, t_all_pre2 ] = buildKA_linear( t_all_pre1, y, lab, identID, verifID, alppre, Npre, ymin, ymax, ymin, ymax, fnB0_pre2, fnT0_pre2 );
+
+end
 
 %. build model
-modelMethod = 5;
+modelMethod = 7;
 if (modelMethod == 5)
     
     %. three-layer model, basis functions - cubic splines, identification method - Gauss-Newton

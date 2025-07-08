@@ -19,6 +19,9 @@ n = size(fnB,1);
 q = size(fnT,1);
 p = size(fnT,2);
 
+%. num. of param.
+Npar = n*m*p + q*p;
+
 err_all = zeros(N,1);
 RMSE = zeros(Nrun,1);
 PC = zeros(Nrun,1);
@@ -34,9 +37,6 @@ Mq = splineMatrix(q);
 
 fnB_r = reshape(fnB,n*m,p);
 fnT_r = fnT(:);
-
-fnB0_r = reshape(fnB0,n*m,p);
-fnT0_r = fnT0(:);
 
 %. calc. bottom - basis
 xr = reshape(x.',1,N*m);
@@ -62,6 +62,9 @@ for jj=1:Nrun
     LgradB_all = ( top * Cpnm ) .* phi_re;
     LgradT_all = psi_r.';
 
+    %. param. update
+    fnUpd = zeros(Npar,1);
+
     for ii=1:N
         %. calc.
         if ( lab(ii) == identID )||( lab(ii) == verifID )
@@ -71,8 +74,7 @@ for jj=1:Nrun
             LgradB = LgradB_all(ii,:);
             LgradT = LgradT_all(ii,:);
 
-            yhat_e = yhat + LgradT*(fnT_r-fnT0_r) + LgradB*(fnB_r(:)-fnB0_r(:));
-            Lnum_e = yhat_e - yy;
+            Lnum_e = yhat - yy + [ LgradB LgradT ] * fnUpd;
 
             %. export
             err_all(ii) = abs(Lnum_e);
@@ -81,13 +83,12 @@ for jj=1:Nrun
         %. ident.
         if ( lab(ii) == identID )
             chi = sum(LgradB.^2) + sum(LgradT.^2);
-            fnB_r = fnB_r - alp * Lnum_e * reshape(LgradB,n*m,p)/chi;
-            fnT_r = fnT_r - alp * Lnum_e * LgradT.'/chi;
+            fnUpd = fnUpd - alp * Lnum_e * [ LgradB LgradT ].'/chi;
         end
     end
 
-    fnB0_r = fnB_r;
-    fnT0_r = fnT_r;
+    fnB_r = fnB_r + reshape(fnUpd(1:(n*m*p),1),n*m,p);
+    fnT_r = fnT_r + fnUpd((n*m*p+1):Npar,1);
 
     inds = ( lab == verifID );
     RMSE(jj) = sqrt( sum( err_all(inds).^2 )/sum(inds) )/(ymax-ymin);
