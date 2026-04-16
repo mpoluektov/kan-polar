@@ -1,4 +1,4 @@
-function [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_linear( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 )
+function [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_linear( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -40,6 +40,15 @@ toLinM = h*(0:1:(p*r-1));
 toLinT = q*(0:1:(r-1));
 
 for jj=1:Nrun
+
+    %. normalise
+    if ( nrmse == 1 )
+        fnB_nrm = normBlock( fnB, m, tmin, tmax );
+        fnB = fnB_nrm;
+        fnM_nrm = normBlock( fnM, p, smin, smax );
+        fnM = fnM_nrm;
+    end
+
     for ii=1:N
         %. calc.
         if ( lab(ii) == identID )||( lab(ii) == verifID )

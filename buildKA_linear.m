@@ -1,4 +1,4 @@
-function [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all, t_all ] = buildKA_linear( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 )
+function [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all, t_all ] = buildKA_linear( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -31,6 +31,13 @@ toLinB = n*(0:1:(p*m-1));
 toLinT = q*(0:1:(p-1));
 
 for jj=1:Nrun
+
+    %. normalise
+    if ( nrmse == 1 )
+        fnB_nrm = normBlock( fnB, m, tmin, tmax );
+        fnB = fnB_nrm;
+    end
+
     for ii=1:N
         %. calc.
         if ( lab(ii) == identID )||( lab(ii) == verifID )
@@ -57,7 +64,7 @@ for jj=1:Nrun
             indR = kR_ex + toLinB;
     
             outB = om_psi_ex .* fnB(indL) + psi_ex .* fnB(indR);
-            outB_r = reshape( outB, m, [] );
+            outB_r = reshape( outB, m, p );
             t = sum( outB_r, 1 );
             t_all(ii,:) = t;
         
@@ -89,13 +96,15 @@ for jj=1:Nrun
         %. ident.
         if ( lab(ii) == identID )
             
-            %. ident. bottom
+            %. deriv.
             coefB = ( fnT(idxR) - fnT(idxL) ) * (q-1) / ( tmax - tmin );
             coefB_e = repmat( coefB, m, 1 );
-            coefB_er = reshape( coefB_e, 1, [] );
+            coefB_er = reshape( coefB_e, 1, p*m );
             chiB = sum( (coefB_er .* om_psi_ex).^2 + (coefB_er .* psi_ex).^2 );
             chiT = sum( om_phi.^2 + phi.^2 );
             chiAll = chiB + chiT;
+            
+            %. ident. bottom
             fnB(indL) = fnB(indL) + alp * D * (coefB_er .* om_psi_ex)/chiAll;
             fnB(indR) = fnB(indR) + alp * D * (coefB_er .* psi_ex)/chiAll;
 
@@ -106,7 +115,7 @@ for jj=1:Nrun
     end
 
     inds = ( lab == verifID );
-    RMSE(jj) = sqrt( sum( err_all(inds).^2 )/sum(inds) )/(ymax-ymin);
+    RMSE(jj) = sqrt( sum( err_all(inds).^2 )/sum(inds) )/( ymax - ymin );
     t_min_all(jj,:) = min(t_all(inds,:));
     t_max_all(jj,:) = max(t_all(inds,:));
 

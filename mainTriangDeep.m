@@ -1,13 +1,17 @@
 
-%.   Kolmogorov-Arnold model for machine learning
-%.   This code demonstrates building three-layered (deep) model; an example for the classical version (two layers - inner and outer functions) can be found in mainTriang.m
-%.   See (Poluektov and Polar, arXiv:2305.08194, May 2023)
-%.   Code has been written by Michael Poluektov (University of Dundee, Department of Mathematical Sciences and Computational Physics)
+%.   Kolmogorov-Arnold network (KAN) as a machine learning model
+%.   Cite paper [Poluektov and Polar, Machine Learning, 114(8):185, 2025]
+%.   Code has been written by Michael Poluektov (current affiliation - School of Computing and Mathematical Sciences, University of Greenwich, UK)
+%.   Email: m.poluektov@greenwich.ac.uk
 
 %.   The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D
-%.   and the output is the area of the triangle that is formed by the points. The points belong to unit square.
-%.   K.-A. regression model is built and the RMSE as a function of the iteration number is plotted.
-%.   There are three possible combinations of the model variant and the identification method. 
+%.   and the output is the area of the triangle that is formed by the points. The points belong to the unit square.
+%.   Three-layer KAN is built and the RMSE as a function of the iteration number is plotted.
+%.   There are three possible combinations of the model variant and the training method. 
+
+%.   The trained model can be used to make a prediction on a new dataset. 
+%.   For the spline version of the model, use function 'modelKAdeep_basisC'.
+%.   For the piecewise-linear version of the model, use function 'modelKAdeep_linear'.
 
 clear variables;
 close all;
@@ -37,21 +41,24 @@ lab(Nid:end) = 2;
 identID = 1;
 verifID = 2;
 
-%% numerical param.
+%% numerical parameters
 
-%. damping factor for iterative parameter update (also called learning rate)
+%. numerical damping for iterative parameter update (also called "learning rate")
 alp = 0.5;
 
-%. damping factor for pre-training
+%. numerical damping for pre-training
 alppre = 0.1;
 
 %. Tikhonov regularisation parameter for Gauss-Newton method 
 lam = 1;
 
-%. num. of runs through data for main training
+%. normalise intermediate variables for Newton-Kaczmarz method (0 or 1, default - 1)
+nrmse = 1;
+
+%. number of runs through data for main training (also called "epochs")
 Nrun = 100;
 
-%. num. of runs through data for pre-training
+%. number of runs through data for pre-training
 Npre = 20;
 
 %. limits
@@ -60,27 +67,27 @@ xmax = 1;
 ymin = 0;
 ymax = 0.5;
 
-%. num. of nodes bottom
+%. number of nodes bottom
 n = 7;
 
-%. num. of nodes middle
+%. number of nodes middle
 h = 7;
 
-%. num. of nodes top
+%. number of nodes top
 q = 7;
 
-%. num. of bottom operators
+%. number of bottom blocks
 p = 8;
 
-%. num. of middle operators
+%. number of middle blocks
 r = 8;
 
-%% build K.-A.
+%% build model
 
 tic;
 
 %. initialise and/or pre-train
-modelPre = 1;
+modelPre = 0;
 if (modelPre == 0)
 
     %. initialise randomly
@@ -92,9 +99,9 @@ elseif (modelPre == 1)
     [ fnB0_pre1, fnT0_pre1 ] = buildKA_init( m, n, h, p, ymin, ymax );
     [ fnB0_pre2, fnT0_pre2 ] = buildKA_init( p, h, q, r, ymin, ymax );
 
-    %. pre-training for three-layer model, basis functions - cubic splines, identification method - Newton-Kaczmarz, standard
-    [ yhat_all_pre1, fnB0, fnTdum, RMSE_pre1, t_min_all_pre1, t_max_all_pre1, t_all_pre1 ] = buildKA_basisC( x, y, lab, identID, verifID, alppre, Npre, xmin, xmax, ymin, ymax, fnB0_pre1, fnT0_pre1 );
-    [ yhat_all_pre2, fnM0, fnT0, RMSE_pre2, t_min_all_pre2, t_max_all_pre2, t_all_pre2 ] = buildKA_basisC( t_all_pre1, y, lab, identID, verifID, alppre, Npre, ymin, ymax, ymin, ymax, fnB0_pre2, fnT0_pre2 );
+    %. pre-training for three-layer model; basis functions - cubic splines; training method - Newton-Kaczmarz standard
+    [ yhat_all_pre1, fnB0, fnTdum, RMSE_pre1, t_min_all_pre1, t_max_all_pre1, t_all_pre1 ] = buildKA_basisC( x, y, lab, identID, verifID, alppre, nrmse, Npre, xmin, xmax, ymin, ymax, fnB0_pre1, fnT0_pre1 );
+    [ yhat_all_pre2, fnM0, fnT0, RMSE_pre2, t_min_all_pre2, t_max_all_pre2, t_all_pre2 ] = buildKA_basisC( t_all_pre1, y, lab, identID, verifID, alppre, nrmse, Npre, ymin, ymax, ymin, ymax, fnB0_pre2, fnT0_pre2 );
     
 elseif (modelPre == 2)
 
@@ -102,9 +109,9 @@ elseif (modelPre == 2)
     [ fnB0_pre1, fnT0_pre1 ] = buildKA_init( m, n, h, p, ymin, ymax );
     [ fnB0_pre2, fnT0_pre2 ] = buildKA_init( p, h, q, r, ymin, ymax );
 
-    %. pre-training for three-layer model, basis functions - piecewise-linear, identification method - Newton-Kaczmarz, standard
-    [ yhat_all_pre1, fnB0, fnTdum, RMSE_pre1, t_min_all_pre1, t_max_all_pre1, t_all_pre1 ] = buildKA_linear( x, y, lab, identID, verifID, alppre, Npre, xmin, xmax, ymin, ymax, fnB0_pre1, fnT0_pre1 );
-    [ yhat_all_pre2, fnM0, fnT0, RMSE_pre2, t_min_all_pre2, t_max_all_pre2, t_all_pre2 ] = buildKA_linear( t_all_pre1, y, lab, identID, verifID, alppre, Npre, ymin, ymax, ymin, ymax, fnB0_pre2, fnT0_pre2 );
+    %. pre-training for three-layer model; basis functions - piecewise-linear; training method - Newton-Kaczmarz standard
+    [ yhat_all_pre1, fnB0, fnTdum, RMSE_pre1, t_min_all_pre1, t_max_all_pre1, t_all_pre1 ] = buildKA_linear( x, y, lab, identID, verifID, alppre, nrmse, Npre, xmin, xmax, ymin, ymax, fnB0_pre1, fnT0_pre1 );
+    [ yhat_all_pre2, fnM0, fnT0, RMSE_pre2, t_min_all_pre2, t_max_all_pre2, t_all_pre2 ] = buildKA_linear( t_all_pre1, y, lab, identID, verifID, alppre, nrmse, Npre, ymin, ymax, ymin, ymax, fnB0_pre2, fnT0_pre2 );
 
 end
 
@@ -112,18 +119,18 @@ end
 modelMethod = 5;
 if (modelMethod == 5)
     
-    %. three-layer model, basis functions - cubic splines, identification method - Gauss-Newton
+    %. three-layer model; basis functions - cubic splines; training method - Gauss-Newton
     [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = solveMinGaussDeep( x, y, lab, identID, verifID, alp, lam, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 );
     
 elseif (modelMethod == 6)
 
-    %. three-layer model, basis functions - cubic splines, identification method - Newton-Kaczmarz, accelerated
-    [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_basisA( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 );
+    %. three-layer model; basis functions - cubic splines; training method - Newton-Kaczmarz accelerated
+    [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_basisA( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 );
     
 elseif (modelMethod == 7)
 
-    %. three-layer model, basis functions - piecewise-linear, identification method - Newton-Kaczmarz, standard
-    [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_linear( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 );
+    %. three-layer model; basis functions - piecewise-linear; training method - Newton-Kaczmarz standard
+    [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_linear( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 );
 
 end
 
@@ -157,3 +164,17 @@ end
 hold off;
 xlabel('number of passes');
 ylabel('min/max of second hidden var.');
+
+%% inference using the trained model
+
+if (modelMethod == 5)||(modelMethod == 6)
+
+    %. basis functions - cubic splines
+    yhat_final = modelKAdeep_basisC( x, xmin, xmax, ymin, ymax, fnB, fnM, fnT );
+
+elseif (modelMethod == 7)
+
+    %. basis functions - piecewise-linear
+    yhat_final = modelKAdeep_linear( x, xmin, xmax, ymin, ymax, fnB, fnM, fnT );
+
+end

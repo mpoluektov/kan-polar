@@ -2,8 +2,13 @@ function [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
+%. num. of records
+N = size(x,1);
+
+%. num. of inputs
 m = size(x,2);
 
+%. init. operators
 fnB = fnB0;
 fnM = fnM0;
 fnT = fnT0;
@@ -13,6 +18,7 @@ q = size(fnT,1);
 p = size(fnB,2)/m;
 r = size(fnM,2)/p;
 
+yhat_all = zeros(N,1);
 RMSE = zeros(Nrun,1);
 PC = zeros(Nrun,1);
 t_min_all = zeros(Nrun,p);
@@ -26,8 +32,8 @@ for jj=1:Nrun
     indV = ( lab == verifID );
 
     %. training
-    [ yhat_all, LgradB_all, LgradM_all, LgradT_all ] = modelKAdeep_basisC( x(indI,:), xmin, xmax, ymin, ymax, fnB, fnM, fnT );
-    L_all = yhat_all - y(indI,:);
+    [ yhat_tra, LgradB_all, LgradM_all, LgradT_all ] = modelKAdeep_basisC( x(indI,:), xmin, xmax, ymin, ymax, fnB, fnM, fnT );
+    L_all = yhat_tra - y(indI,:);
     
     F = L_all;
     J = [ LgradB_all LgradM_all LgradT_all ];
@@ -45,15 +51,19 @@ for jj=1:Nrun
     fnT = fnT + alp*dltT;
 
     %. validation
-    [ yhat_all, dum1, dum2, dum3, t_min, t_max, s_min, s_max ] = modelKAdeep_basisC( x(indV,:), xmin, xmax, ymin, ymax, fnB, fnM, fnT );
-    err_all = abs( yhat_all - y(indV,:) );
+    [ yhat_val, dum1, dum2, dum3, t_min, t_max, s_min, s_max ] = modelKAdeep_basisC( x(indV,:), xmin, xmax, ymin, ymax, fnB, fnM, fnT );
+    err_all = abs( yhat_val - y(indV,:) );
     RMSE(jj) = sqrt( mean( err_all.^2 ) )/(ymax-ymin);
     t_min_all(jj,:) = t_min;
     t_max_all(jj,:) = t_max;
     s_min_all(jj,:) = s_min;
     s_max_all(jj,:) = s_max;
     
-    PCt = corrcoef( y(indV,:), yhat_all );
+    %. export
+    yhat_all(indI) = yhat_tra;
+    yhat_all(indV) = yhat_val;
+
+    PCt = corrcoef( y(indV,:), yhat_val );
     PC(jj) = PCt(1,2);
 
     printProgr = 1;

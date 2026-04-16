@@ -1,4 +1,4 @@
-function [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all, t_all ] = buildKA_basisC( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 )
+function [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all, t_all ] = buildKA_basisC( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -39,6 +39,14 @@ fnB_r = reshape(fnB,n*m,p);
 fnT_r = fnT(:);
 
 for jj=1:Nrun
+
+    %. normalise
+    if ( nrmse == 1 )
+        fnB = reshape(fnB_r,n,p*m);
+        fnB_nrm = normBlock( fnB, m, tmin, tmax );
+        fnB_r = reshape(fnB_nrm,n*m,p);
+    end
+
     for ii=1:N
         %. calc.
         if ( lab(ii) == identID )||( lab(ii) == verifID )

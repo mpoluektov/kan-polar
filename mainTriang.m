@@ -1,12 +1,17 @@
 
-%.   Kolmogorov-Arnold model for machine learning
-%.   See (Poluektov and Polar, arXiv:2305.08194, May 2023)
-%.   Code has been written by Michael Poluektov (University of Dundee, Department of Mathematical Sciences and Computational Physics)
+%.   Kolmogorov-Arnold network (KAN) as a machine learning model
+%.   Cite paper [Poluektov and Polar, Machine Learning, 114(8):185, 2025]
+%.   Code has been written by Michael Poluektov (current affiliation - School of Computing and Mathematical Sciences, University of Greenwich, UK)
+%.   Email: m.poluektov@greenwich.ac.uk
 
 %.   The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D
-%.   and the output is the area of the triangle that is formed by the points. The points belong to unit square.
-%.   K.-A. regression model is built and the RMSE as a function of the iteration number is plotted.
-%.   There are four possible combinations of the model variant and the identification method. 
+%.   and the output is the area of the triangle that is formed by the points. The points belong to the unit square.
+%.   Two-layer KAN is built and the RMSE as a function of the iteration number is plotted.
+%.   There are four possible combinations of the model variant and the training method. 
+
+%.   The trained model can be used to make a prediction on a new dataset. 
+%.   For the spline version of the model, use function 'modelKA_basisC'.
+%.   For the piecewise-linear version of the model, use function 'modelKA_linear'.
 
 clear variables;
 close all;
@@ -36,15 +41,18 @@ lab(Nid:end) = 2;
 identID = 1;
 verifID = 2;
 
-%% numerical param.
+%% numerical parameters
 
-%. damping factor for iterative parameter update (also called learning rate)
+%. numerical damping for iterative parameter update (also called "learning rate")
 alp = 0.5;
 
 %. Tikhonov regularisation parameter for Gauss-Newton method 
 lam = 1;
 
-%. num. of runs through data
+%. normalise intermediate variables for Newton-Kaczmarz method (0 or 1, default - 1)
+nrmse = 1;
+
+%. number of runs through data (also called "epochs")
 Nrun = 100;
 
 %. limits
@@ -53,16 +61,16 @@ xmax = 1;
 ymin = 0;
 ymax = 0.5;
 
-%. num. of nodes bottom
+%. number of nodes bottom
 n = 7;
 
-%. num. of nodes top
+%. number of nodes top
 q = 7;
 
-%. num. of bottom operators, 2*m+1 for classical K.-A.
+%. number of bottom blocks, 2*m+1 for classical two-layer KAN
 p = 13;
 
-%% build K.-A.
+%% build model
 
 tic;
 
@@ -72,24 +80,24 @@ tic;
 %. build model
 modelMethod = 1;
 if (modelMethod == 1)
-    
-    %. basis functions - cubic splines, identification method - Gauss-Newton
+
+    %. two-layer model; basis functions - cubic splines; training method - Gauss-Newton
     [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = solveMinGauss( x, y, lab, identID, verifID, alp, lam, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
-    
+
 elseif (modelMethod == 2)
-    
-    %. basis functions - cubic splines, identification method - Newton-Kaczmarz, standard
-    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKA_basisC( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
-    
+
+    %. two-layer model; basis functions - cubic splines; training method - Newton-Kaczmarz standard
+    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKA_basisC( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
+
 elseif (modelMethod == 3)
-    
-    %. basis functions - cubic splines, identification method - Newton-Kaczmarz, accelerated
-    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKA_basisA( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
-    
+
+    %. two-layer model; basis functions - cubic splines; training method - Newton-Kaczmarz accelerated
+    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKA_basisA( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
+
 elseif (modelMethod == 4)
 
-    %. basis functions - piecewise-linear, identification method - Newton-Kaczmarz, standard
-    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKA_linear( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
+    %. two-layer model; basis functions - piecewise-linear; training method - Newton-Kaczmarz standard
+    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKA_linear( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
 
 end
 
@@ -112,4 +120,18 @@ for jj=1:p
 end
 hold off;
 xlabel('number of passes');
-ylabel('min/max of intermediate var.');
+ylabel('min/max of intermediate variables');
+
+%% inference using the trained model
+
+if (modelMethod == 1)||(modelMethod == 2)||(modelMethod == 3)
+
+    %. basis functions - cubic splines
+    yhat_final = modelKA_basisC( x, xmin, xmax, ymin, ymax, fnB, fnT );
+
+elseif (modelMethod == 4)
+
+    %. basis functions - piecewise-linear
+    yhat_final = modelKA_linear( x, xmin, xmax, ymin, ymax, fnB, fnT );
+
+end

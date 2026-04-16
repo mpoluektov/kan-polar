@@ -1,4 +1,4 @@
-function [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_basisA( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 )
+function [ yhat_all, fnB, fnM, fnT, RMSE, t_min_all, t_max_all, s_min_all, s_max_all ] = buildKAdeep_basisA( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnM0, fnT0 )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -28,6 +28,7 @@ r = size(fnM,2)/p;
 Npar = n*m*p + h*p*r + q*r;
 
 err_all = zeros(N,1);
+yhat_all = zeros(N,1);
 RMSE = zeros(Nrun,1);
 PC = zeros(Nrun,1);
 t_min_all = zeros(Nrun,p);
@@ -58,6 +59,16 @@ phi_re = repmat(phi_r,p,1);
 
 for jj=1:Nrun
 
+    %. normalise
+    if ( nrmse == 1 )
+        fnB = reshape(fnB_r,n,m*p);
+        fnB_nrm = normBlock( fnB, m, tmin, tmax );
+        fnB_r = reshape(fnB_nrm,n*m,p);
+        fnM = reshape(fnM_r,h,p*r);
+        fnM_nrm = normBlock( fnM, p, smin, smax );
+        fnM_r = reshape(fnM_nrm,h*p,r);
+    end
+
     %. calc. bottom - interm.
     t = phi_r.' * fnB_r;
     t_all = t;
@@ -72,12 +83,12 @@ for jj=1:Nrun
     s = xi_r.' * fnM_r;
     s_all = s;
     
-    %. calc. top
+    %. calc. top - prediction
     sr = reshape(s.',1,N*r);
     [ psi, dpsi ] = basisFunc_spline( sr, smin, smax, q, Mq );
     psi_r = reshape(psi,q*r,N);
     dpsi_r = reshape(dpsi,q*r,N);
-    yhat_all = psi_r.' * fnT_r;
+    yhat_pred = psi_r.' * fnT_r;
     
     %. deriv.
     top = dpsi_r.' * diag(fnT_r.') * Crq;
@@ -93,23 +104,24 @@ for jj=1:Nrun
     for ii=1:N
         %. calc.
         if ( lab(ii) == identID )||( lab(ii) == verifID )
-
             yy = y(ii);
-            yhat = yhat_all(ii);
             LgradB = LgradB_all(ii,:);
             LgradM = LgradM_all(ii,:);
             LgradT = LgradT_all(ii,:);
 
-            Lnum_e = yhat - yy + [ LgradB LgradM LgradT ] * fnUpd;
+            %. calc. top - correction
+            yhat = yhat_pred(ii) + [ LgradB LgradM LgradT ] * fnUpd;
+            Lnum = yhat - yy;
 
             %. export
-            err_all(ii) = abs(Lnum_e);
+            err_all(ii) = abs(Lnum);
+            yhat_all(ii) = yhat;
         end
         
         %. ident.
         if ( lab(ii) == identID )
             chi = sum(LgradB.^2) + sum(LgradM.^2) + sum(LgradT.^2);
-            fnUpd = fnUpd - alp * Lnum_e * [ LgradB LgradM LgradT ].'/chi;
+            fnUpd = fnUpd - alp * Lnum * [ LgradB LgradM LgradT ].'/chi;
         end
     end
 

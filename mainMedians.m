@@ -1,13 +1,15 @@
 
-%.   Kolmogorov-Arnold model for machine learning
-%.   This code demonstrates building a model with a vector output; an example for the single output can be found in mainTriang.m
-%.   See (Poluektov and Polar, arXiv:2305.08194, May 2023)
-%.   Code has been written by Michael Poluektov (University of Dundee, Department of Mathematical Sciences and Computational Physics)
+%.   Kolmogorov-Arnold network (KAN) as a machine learning model
+%.   Cite paper [Poluektov and Polar, Machine Learning, 114(8):185, 2025]
+%.   Code has been written by Michael Poluektov (current affiliation - School of Computing and Mathematical Sciences, University of Greenwich, UK)
+%.   Email: m.poluektov@greenwich.ac.uk
 
 %.   The computational example is a synthetic dataset - for each record, the inputs are the coordinates of three points in 2D
-%.   and the output are the lengths of the medians of the triangle that is formed by the points. The points belong to unit square.
-%.   K.-A. regression model is built and the RMSE as a function of the iteration number is plotted.
-%.   There is one possible combination of the model variant and the identification method (so far). 
+%.   and the outputs are the lengths of the medians of the triangle that is formed by the points. The points belong to the unit square.
+%.   Two-layer vector-output KAN is built and the RMSE as a function of the iteration number is plotted.
+%.   There is only one combination of the model variant and the training method (so far). 
+
+%.   The trained model can be used to make a prediction on a new dataset, use function 'modelKAvect_linear'. 
 
 clear variables;
 close all;
@@ -42,15 +44,15 @@ lab(Nid:end) = 2;
 identID = 1;
 verifID = 2;
 
-%% numerical param.
+%% numerical parameters
 
-%. damping factor for iterative parameter update (also called learning rate)
+%. numerical damping for iterative parameter update (also called "learning rate")
 alp = 0.5;
 
-%. Tikhonov regularisation parameter for Gauss-Newton method 
-lam = 1;
+%. normalise intermediate variables for Newton-Kaczmarz method (0 or 1, default - 1)
+nrmse = 1;
 
-%. num. of runs through data
+%. number of runs through data (also called "epochs")
 Nrun = 100;
 
 %. limits
@@ -59,16 +61,16 @@ xmax = 1;
 ymin = 0;
 ymax = sqrt(2);
 
-%. num. of nodes bottom
+%. number of nodes bottom
 n = 7;
 
-%. num. of nodes top
+%. number of nodes top
 q = 10;
 
-%. num. of bottom operators, 2*m+1 for classical K.-A.
+%. number of bottom blocks, 2*m+1 for classical two-layer KAN
 p = 13;
 
-%% build K.-A.
+%% build model
 
 tic;
 
@@ -79,8 +81,8 @@ tic;
 modelMethod = 8;
 if (modelMethod == 8)
     
-    %. basis functions - piecewise-linear, identification method - Newton-Kaczmarz, standard
-    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKAvect_linear( x, y, lab, identID, verifID, alp, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
+    %. two-layer vector-output model; basis functions - piecewise-linear; training method - Newton-Kaczmarz standard
+    [ yhat_all, fnB, fnT, RMSE, t_min_all, t_max_all ] = buildKAvect_linear( x, y, lab, identID, verifID, alp, nrmse, Nrun, xmin, xmax, ymin, ymax, fnB0, fnT0 );
 
 end
 
@@ -104,3 +106,12 @@ end
 hold off;
 xlabel('number of passes');
 ylabel('min/max of intermediate var.');
+
+%% inference using the trained model
+
+if (modelMethod == 8)
+
+    %. vector-output; basis functions - piecewise-linear
+    yhat_final = modelKAvect_linear( x, xmin, xmax, ymin, ymax, fnB, fnT );
+
+end
