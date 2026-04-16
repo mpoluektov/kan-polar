@@ -20,7 +20,7 @@ The main highlights of the code are:
 
 ## Getting started
 
-There are three main scripts that run the code - model training and inference. They address three separate cases.
+There are three main scripts that run the code (each demonstrates model training and inference). The scripts address three separate cases.
 
 Main script `mainTriang` constructs two-layer single-output "classical" model. In the script, flag `modelMethod` selects the model type (splines or piecewise-linear) and the training method (GN or NK). In the model building functions, flag `printProgr` switches the printout of the progress in the Command Window.
 
@@ -32,7 +32,7 @@ Main script `mainTriangDeep` constructs three-layer single-output model. This mo
 
 The a pre-training can be used for the three-layer model. Flag `modelPre` selects either no pre-training (random initialisation), pre-training for the spline basis, or pre-training for the piecewise-linear basis. The pre-training algorithm consists in training a classical (two-layer) model first, disregarding the top layer, and taking the intermediate variables as the new inputs, using which another classical (two-layer) model is trained. This gives the initial approximation for the three layers.
 
-Main script `mainMedians` constructs two-layer vector-output model. The computational example is similar to the above: the inputs are the coordinates of three points in 2D and the outputs are the lengths of the medians of the triangle that is formed by the points. At the moment, only piecewise-linear basis functions are implemented for this case.
+Main script `mainMedians` constructs two-layer vector-output model. The computational example is similar to the above - the inputs are the coordinates of three points in 2D and the outputs are the lengths of the medians of the triangle that is formed by the points. At the moment, only piecewise-linear basis functions are implemented for this case.
 
 There are three scripts with the units tests: `testBasis` for verifying the derivatives of the basis functions, `testDeriv` for verifying the derivatives of the model output by the inputs and by the parameters, and `testSpline` for comparing the implemented splines with the built-in MATLAB splines.
 
